@@ -3,7 +3,7 @@ export const APP_CONFIG = {
     serviceName: '1lev1-mcp',
 
     // כתובת ה-URL של ה-MCP server
-    mcpUrl: 'https://rend.1lev1.com/api/mcp',
+    mcpUrl: 'https://api.1lev1.com/api/mcp',
 
     // כתובת דף החיבור באתר (עבור OAuth/Auth flow)
     authUrlBase: 'https://1lev1.com/mcp-connect',
