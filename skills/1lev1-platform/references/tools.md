@@ -7,7 +7,7 @@ Names below are the tool names the server exposes. Always confirm against
 
 | Tool | Input | Notes |
 |---|---|---|
-| `findUserProjectsTool` | `userId` (required), `query?` | Returns `{ id, idPr, name }[]`. `id` is the internal id; `idPr` is what site URLs use. See **Sharp edges**. |
+| `findUserProjectsTool` | `query?` (and `userId?`, which you should omit) | Returns `{ id, idPr, name }[]`. `id` is the internal id; `idPr` is what site URLs use. Omit `userId` — it defaults to the key's owner, and naming anyone else is refused. |
 | `findMissionTool` | `missionName` | Substring match across the user's missions. Returns `projectId` and `projectName` too - use it to disambiguate. |
 | `listUserMissionsTool` | - | The caller's missions. |
 | `getMissionDetailsTool` | mission id | Full record incl. skills, roles, hours. |
@@ -32,26 +32,37 @@ Names below are the tool names the server exposes. Always confirm against
 
 ## Write (changes state - require an explicit ask)
 
+`timerActionTool` is available to every key: it only ever touches the caller's
+own timers and hours.
+
 | Tool | Input | Notes |
 |---|---|---|
 | `timerActionTool` | `action`: `start` / `stop` / `pause` / `resume`, `missionId?` | Without `missionId` it acts on the currently active timer. **Always pass `missionId` on `start`** - an omitted id on an ambiguous account is how hours land on the wrong mission. |
+
+## Shared write (needs the `mcp:write` scope)
+
+These create work and obligations for **other** members, so a default key does
+not get them - they appear in `tools/list` only when the key was granted
+`mcp:write`. If a user asks for one and you do not have the tool, say the key
+needs that scope rather than improvising a workaround.
+
+| Tool | Input | Notes |
+|---|---|---|
 | `createMissionTool` | `projectId`, `missionName`, plus `descrip?`, `skills?`, `roles?`, `workways?`, `nhours?`, `valph?`, `iskvua?` (recurring monthly), `dateStart?`, `dateEnd?`, `assignedUserId?`, `checklist?` | Omit `assignedUserId` to leave the mission open for anyone in the rikma to take. |
 | `createTaskTool` | `projectId`, `name`, `description?`, `link?`, `missionId?`, `hashivut` (`white`/`green`/`yellow`/`red`), `dateS?`, `dateF?`, and **either** `assignedUserId` **or** `tafkidims` (role ids) - never both | Resolve names to ids with `getProjectMembersTool` first. Assigning to a role means "whoever holds it sees it". |
 
+Prefer `prepareMissionTool` even when you do hold `mcp:write`: a prefilled form
+the human approves is the platform's own pattern, and it costs one click.
+
 ## Agent and workflow tools
 
-The server may also expose `ask_*` and `run_*` tools that proxy 1lev1's own
-internal chat agents. **Do not use them.** They are the site's in-app assistant;
-calling them from another agent produces a second, less-informed agent in the
-loop. Use the concrete tools above.
+Older deployments also exposed `ask_*` and `run_*` tools proxying 1lev1's own
+in-app assistant. They are no longer served, and if you ever see one, do not use
+it: calling it puts a second, less-informed agent inside your own loop. Use the
+concrete tools above.
 
 ## Sharp edges
 
-- **`findUserProjectsTool` needs a `userId` you do not have.** The tool takes
-  `userId` as a required input and does not fall back to the API key's owner, so
-  an external client has nothing to pass. Until this is fixed server-side, reach
-  a rikma through `findMissionTool` (which returns `projectId` and
-  `projectName`) or ask the user for the rikma's id from its URL.
 - **`id` vs `idPr`.** Site URLs use `idPr`. Tool inputs want `id`. Mixing them
   produces a 404 or an empty result rather than an error.
 - **`createTaskTool` writes immediately** with a service token, not through the
@@ -61,3 +72,6 @@ loop. Use the concrete tools above.
   surfaces. Echo what the tool returned; do not retype or "fix" it.
 - **A timer left running accrues hours.** If `getActiveTimersTool` shows one from
   a previous day, surface it before doing anything else.
+- **You cannot read another user's data.** Tools that take a `userId` refuse one
+  that is not the key's owner. If the user wants a teammate's status, use
+  `getProjectMembersTool` + `getMemberMissionsTool` within a shared rikma.

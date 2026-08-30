@@ -20,7 +20,7 @@ then add to `.mcp.json`:
   "mcpServers": {
     "1lev1": {
       "type": "http",
-      "url": "https://1lev1.com/api/mcp",
+      "url": "https://api.1lev1.com/api/mcp",
       "headers": { "Authorization": "Bearer 1lev1_..." }
     }
   }
