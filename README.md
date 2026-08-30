@@ -13,11 +13,40 @@ By connecting, your AI agent gains "superpowers" within the 1lev1 system:
 
 ## Installation & Usage
 
-Once the package is published to NPM, no prior installation is needed. Simply run:
+No prior installation is needed. Simply run:
 
 ```bash
 npx 1lev1-mcp
 ```
+
+This does two things:
+
+1. **Connects** — opens 1lev1.com, you log in and approve, and the API key is
+   written into every AI agent you actually have installed.
+2. **Installs the skill** — the standing instructions that teach the agent what
+   a rikma is, that logged hours are ownership, and that it must never vote or
+   sign a profit-split on somebody else's behalf. The connection gives the agent
+   hands; the skill gives it judgement.
+
+Restart your agent afterwards to pick up the new config.
+
+To undo everything:
+
+```bash
+npx 1lev1-mcp remove
+```
+
+That removes the server entry and the skill from every agent config. The API key
+itself stays valid until you revoke it at **1lev1.com → Settings → API keys**.
+
+### What it will not touch
+
+- Config files that are not plain JSON (VS Code `settings.json` with comments,
+  for example) are **left alone** and reported, never rewritten.
+- Agents you have not installed are skipped — no directories are created and no
+  API key is written for a tool you do not use.
+- Every file it does modify is backed up once to `<file>.1lev1.bak` first, and
+  written atomically.
 
 ## Customization (for Developers)
 

@@ -2,8 +2,18 @@ import http from 'node:http';
 import open from 'open';
 import chalk from 'chalk';
 import ora from 'ora';
-import { writeAllConfigs } from './config-writers.js';
+import { writeAllConfigs, removeAllConfigs } from './config-writers.js';
+import { writeAllSkills, removeAllSkills } from './skill-writer.js';
 import { APP_CONFIG } from './app-config.js';
+
+/** Render one { agent: {success, skipped, reason, path} } map as aligned lines. */
+function report(results) {
+    for (const [agent, status] of Object.entries(results)) {
+        const icon = status.success ? chalk.green('✓') : (status.skipped ? chalk.dim('–') : chalk.yellow('!'));
+        const msg = status.success ? chalk.dim(status.path) : chalk.dim(status.reason);
+        console.log(`  ${icon}  ${agent.padEnd(18)} ${msg}`);
+    }
+}
 
 export async function runSetup({ url, port }) {
     console.log(chalk.bold('\n  MCP Setup ' + url + ' ' + port + '\n'));
@@ -26,14 +36,40 @@ export async function runSetup({ url, port }) {
     const writeSpinner = ora('Writing agent configs...').start();
     const results = await writeAllConfigs({ mcpUrl: url, apiKey: key });
     writeSpinner.stop();
+    console.log(chalk.bold('\n  Connection'));
+    report(results);
 
-    for (const [agent, status] of Object.entries(results)) {
-        const icon = status.success ? chalk.green('✓') : chalk.yellow('–');
-        const msg = status.success ? chalk.dim(status.path) : chalk.dim(status.reason);
-        console.log(`  ${icon}  ${agent.padEnd(18)} ${msg}`);
+    // The connection alone is not enough — install the skill that teaches the
+    // agent what a rikma is and what it must not do on somebody else's behalf.
+    const skillSpinner = ora('Installing 1lev1 skill...').start();
+    const skillResults = await writeAllSkills();
+    skillSpinner.stop();
+    console.log(chalk.bold('\n  Skill'));
+    report(skillResults);
+
+    const wrote = Object.values(results).filter((r) => r.success).length;
+    if (wrote === 0) {
+        console.log('\n' + chalk.yellow('  No agent config was written.'));
+        console.log(chalk.dim('  Add the server manually:'));
+        console.log(chalk.dim(`    { "mcpServers": { "${APP_CONFIG.serviceName}": { "type": "http", "url": "${url}", "headers": { "Authorization": "Bearer <your key>" } } } }`));
     }
 
-    console.log('\n' + chalk.bold('  Done!') + ' Restart your agent to pick up the new config.\n');
+    console.log('\n' + chalk.bold('  Done!') + ' Restart your agent to pick up the new config.');
+    console.log(chalk.dim('  Undo any time with: 1lev1-mcp remove\n'));
+}
+
+/** Removes our entry from every agent config and deletes the installed skill. */
+export async function runRemove() {
+    console.log(chalk.bold('\n  Removing 1lev1 from your agents\n'));
+
+    console.log(chalk.bold('  Connection'));
+    report(await removeAllConfigs({}));
+
+    console.log(chalk.bold('\n  Skill'));
+    report(await removeAllSkills());
+
+    console.log('\n' + chalk.dim('  The API key itself stays valid until you revoke it at'));
+    console.log(chalk.dim('  https://1lev1.com → Settings → API keys\n'));
 }
 
 // נפרד מ-waitForCallback — מחזיר { promise } בלי await
