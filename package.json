@@ -1,7 +1,7 @@
 {
   "name": "1lev1-mcp",
   "version": "2.0.0",
-  "description": "Connect 1lev1 to your AI coding agents",
+  "description": "Connect 1lev1 consent-based partnerships to your AI agent: briefings, equity-bearing mission timers, planning, conversations, concierge and a full rikma storefront over MCP",
   "type": "module",
   "bin": {
     "1lev1-mcp": "./bin/cli.js"
@@ -18,7 +18,15 @@
     "mcp",
     "ai",
     "claude",
-    "cursor"
+    "cursor",
+    "windsurf",
+    "skill",
+    "partnership",
+    "equity",
+    "time-tracking",
+    "consensus",
+    "e-commerce",
+    "hebrew"
   ],
   "license": "MIT",
   "dependencies": {

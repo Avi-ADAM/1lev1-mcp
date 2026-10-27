@@ -13,7 +13,7 @@ sound like it has never seen the platform.
 | **haluka** (חלוקה) | A profit-split agreement: who receives what share of a given income, signed by everyone affected. |
 | **sale** | Income recorded for a rikma. Only counts toward balances once the person holding the money has confirmed they hold it. |
 | **moach** (מוח, "brain") | A rikma's management area on the site: members, missions, votes, money. |
-| **lev** (לב, "heart") | The user's personal home: everything waiting on them across all their rikmot. |
+| **lev** (לב, "heart") | The user's personal home: everything waiting on them across all their rikmas. |
 | **consensus** | The separate discussion space where a contested decision gets talked through rather than voted down. |
 
 ## The consent model
